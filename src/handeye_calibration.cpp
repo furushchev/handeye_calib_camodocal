@@ -283,8 +283,9 @@ int getch()
     return c;
 }
 
-void addFrame() {
-    ros::Time now = ros::Time::now();
+void addFrame()
+{
+    ros::Time now(0); //ros::Time::now();
     tf::StampedTransform EETransform, CamTransform;
     bool hasEE = true, hasCam = true;
 
