@@ -133,12 +133,23 @@ void reportCalibration(const std::string &EETFname,
     std::cerr << "Translation (x,y,z) : "
               << resultAffine.translation().transpose() << std::endl;
     Eigen::Quaternion<double> quaternionResult(resultAffine.rotation());
-    std::stringstream ss;
-    ss << quaternionResult.x() << " "
-       << quaternionResult.y() << " "
-       << quaternionResult.z() << " "
-       << quaternionResult.w();
-    std::cerr << "Rotation q(x,y,z,w): " << ss.str() << "\e[0m" << std::endl;
+    {
+      std::stringstream ss;
+      ss << quaternionResult.x() << " "
+         << quaternionResult.y() << " "
+         << quaternionResult.z() << " "
+         << quaternionResult.w();
+      std::cerr << "Rotation q(x,y,z,w): " << ss.str() << std::endl;
+    }
+    {
+      std::stringstream ss;
+      const auto rpy = resultAffine.rotation().eulerAngles(2, 1, 0);
+      ss << rpy[2] << " "
+         << rpy[1] << " "
+         << rpy[0];
+      std::cerr << "Rotation (roll,pitch,yaw): " << ss.str() << std::endl;
+    }
+    std::cerr << "\e[0m";
 
     std::cout << "\e[1;34m"
               << "Now you can publish tf in: [ Translation, Rotation] "
@@ -285,12 +296,12 @@ int getch()
 
 void addFrame()
 {
-    ros::Time now(0); //ros::Time::now();
+    ros::Time now = ros::Time::now();
     tf::StampedTransform EETransform, CamTransform;
     bool hasEE = true, hasCam = true;
 
     if (listener->waitForTransform(ARTagTFname, cameraTFname, now,
-                                   ros::Duration(1)))
+                                   ros::Duration(10)))
         listener->lookupTransform(ARTagTFname, cameraTFname, now, CamTransform);
     else
     {
@@ -299,7 +310,7 @@ void addFrame()
                  ARTagTFname.c_str(), cameraTFname.c_str());
     }
 
-    if (listener->waitForTransform(baseTFname, EETFname, now, ros::Duration(1)))
+    if (listener->waitForTransform(baseTFname, EETFname, now, ros::Duration(10)))
         listener->lookupTransform(baseTFname, EETFname, now, EETransform);
     else
     {
